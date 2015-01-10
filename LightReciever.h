@@ -6,7 +6,7 @@
 class LightReciever
 {
 public:
-  virtual unsigned int resume() = 0;
+  virtual void loop() = 0;
 };
 
 #endif

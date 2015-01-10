@@ -15,6 +15,6 @@ public:
 class Protocol
 {
 public:
-  void pushData(byte data);
+  void pushData(unsigned char data);
 };
 #endif

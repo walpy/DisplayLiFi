@@ -1,15 +1,27 @@
 // Copyright (c) 2015 IKEUCHI Yasuki
 
-#ifndef LightRecieverImpl_h
-#define LightRecieverImpl_h
+#ifndef LightRecieverS11059_02DT_h
+#define LightRecieverS11059_02DT_h
 #include "LightReciever.h"
-#include "arduino.h"
+#include <stdint.h>
 
-class LightRecieverS11059_02DT : public LightReciever
+#define DISPLAYLIFI_TRACE
+
+class LightRecieverS11059_02DT : 
+public LightReciever
 {
+private:
+  uint16_t red, green, blue, ir;
+  uint16_t max_red, max_green, max_blue;
+  void getRGB();
+#ifdef DISPLAYLIFI_TRACE
+  void printRGB();
+#endif
+
 public:
   LightRecieverS11059_02DT();
-  unsigned int resume();
+  void loop();
 };
 
 #endif
+
