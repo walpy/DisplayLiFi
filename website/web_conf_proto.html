@@ -1,0 +1,144 @@
+<head>
+<script src='http://code.jquery.com/jquery-1.11.2.min.js'></script>
+<style>
+body {
+  background-color: black;
+}
+</style>
+</head>
+<body>
+<canvas>
+</canvas>
+
+<script>
+/**
+ * Protocol:
+ * It based on 'start-stop system' of Serial communication.
+ * It accepts 7 bits characters only(<127).
+ *
+ * Example:
+ * RGB = 111
+ * 110 : start bits
+ * xx1 : 1st two bits (xx_____)
+ * xx1 : 2nd two bits (__xx___)
+ * xx1 : 3rd two bits (____xx_)
+ * xP1 : 4th one bit and even pertity (______x)
+ **/
+function fillColor(red, green, blue, canvas, context) {
+  context.fillStyle = 'rgb(' + red + ', ' + green + ', ' + blue + ')';
+  context.fillRect(0, 0, $(canvas).width(), $(canvas).height());
+  var debugStr = '';
+  debugStr += (red > 0) ? '1' : '0';
+  debugStr += (green > 0) ? '1' : '0';
+  debugStr += (blue > 0) ? '1' : '0';
+  console.log(debugStr);
+}
+
+function sendTwoBits(signal, canvas, context) {
+  if (signal > 3/*0b11*/) {
+    throw '`sendTwoBits()` accepts two bits only.';
+  }
+  /*
+  var debugStr = '';
+  debugStr += (signal >> 1).toString();
+  debugStr += (signal & 1).toString();
+  console.log(debugStr);
+  */
+
+  var red = (signal & 0x2) ? 255 : 0;
+  var green = (signal & 0x1) ? 255 : 0;
+  var blue = 255; // always on when sending signal
+  fillColor(red, green, blue, canvas, context);
+}
+
+function sendStartBits(canvas, context) {
+  fillColor(255, 255, 0, canvas, context);
+}
+
+function sendClearBits(canvas, context) {
+  fillColor(0, 0, 0, canvas, context);
+}
+
+function calcEvenParity(asciiNumber) {
+  // http://d.hatena.ne.jp/houmei/20120531/1338459599
+  if (asciiNumber > 127) {
+    throw '`calcEvenParity()` accepts ascii number only.';
+  }
+  var a = asciiNumber , b;
+  b = a >> 4; //
+  a = a ^ b;  // 76543210 XOR xxxx7654 -> xxxx_(7^3)(6^2)(5^1)(4^0)
+  b = a >> 2; //
+  a = a ^ b;  // (7^3)(6^2)(5^1)(4^0) XOR xx_(7^3)(6^2) ->xx_ (7^3^5^1)(6^2^4^0)
+  b = a >> 1; //
+  a = a ^ b;  // (7^6^5^4^3^2^1^0)
+  return a & 1;
+}
+
+var queue = [];
+function sendString(string, canvas, context) {
+  queue = [];
+  for (var i = 0; i < string.length; i++) {
+    queue.push(function() {
+      sendStartBits(canvas, context);
+    });
+    queue.push(function() {
+      sendClearBits(canvas, context);
+    });
+    var ascii = string.charCodeAt(i);
+    var parity = calcEvenParity(ascii);
+    var data = (ascii << 1) | parity;
+    for (var j = 6; j >= 0; j = j - 2) {
+      (function(){
+        var shift = j;
+        var d = data;
+        queue.push(function() {
+          sendTwoBits((d >> shift) & 3/*0b11*/, canvas, context);
+        });
+        queue.push(function() {
+          sendClearBits(canvas,context);
+        });
+      })();
+    }
+  }
+  var timerId = setInterval(function() {
+    var func = queue.shift();
+    if (!func) {
+      clearInterval(timerId);
+      return;
+    }
+    func();
+  }, 200);
+}
+var STX = 0x72;
+/**
+ * AT commands (based on major WiFi module)
+ * http://www.digi.com/support/productdetail?pid=5176&type=documentation
+ * "Product Manual: XBee Wi-Fi 802.11BGN Module"
+ *   -> "8. XBee Command Reference Tables"
+ *
+ * NOTE:
+ * http://yuki-sato.com/wordpress/2014/02/16/xbee%E3%81%A8mac%E3%82%92%E3%81%A4%E3%81%AA%E3%81%90/
+ *
+ * Example:
+ * ATID (SSID)
+ * ATPK (WEP KEY or WPK Pass)
+ * ATEE 3 (0:open 1:WPA 2:WPA2 3:WEP)
+ * ATWR
+ **/
+
+//sendString("+++\nATID hogerahogera\nATPK test1\nATEE 3\nATWR", $('canvas'), $('canvas')[0].getContext('2d'));
+//sendString("33333", $('canvas'), $('canvas')[0].getContext('2d'));
+var val = 0;
+var data = true;
+setInterval(function() {
+  if (data) {
+  fillColor(val & 0x1 ? 255 : 0, val & 0x2 ? 255 : 0, val & 0x4 ? 255 : 0, $('canvas'), $('canvas')[0].getContext('2d'));
+  val++;
+  val &= 0x7;
+} else {
+  fillColor(0, 0, 0, $('canvas'), $('canvas')[0].getContext('2d'));
+}
+data = !data;
+}, 200);
+</script>
+</body>
