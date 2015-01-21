@@ -1,15 +1,25 @@
-
 // Copyright (c) 2015 IKEUCHI Yasuki
 
 #include "LightRecieverS11059_02DT.h"
 #include <Arduino.h>
 #include <Wire.h>
+#ifdef DISPLAYLIFI_TRACE
+#include <Serial.h>
+#endif
 
 #define DEVICE_ADDRESS 0x2A
 #define CONTROL_REG 0x00
 #define TIMING_REG_H  0x01
 #define TIMING_REG_L 0x02
 #define THRESHOLD 9
+
+// Math.h
+#ifndef max
+#define max(a,b) ((a) > (b) ? (a) : (b))
+#endif
+#ifndef min
+#define min(a,b)  ((a) < (b) ? (a) : (b))
+#endif
 
 enum PHYSICAL_LAYER {
   FLAG,
