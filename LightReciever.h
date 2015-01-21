@@ -3,10 +3,9 @@
 #ifndef LightReciever_h
 #define LightReciever_h
 
-class LightReciever
-{
-public:
-  virtual void loop() = 0;
+class LightReciever {
+  public:
+    virtual void loop() = 0;
 };
 
 #endif

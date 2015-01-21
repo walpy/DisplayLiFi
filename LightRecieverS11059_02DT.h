@@ -7,20 +7,19 @@
 
 #define DISPLAYLIFI_TRACE
 
-class LightRecieverS11059_02DT : 
-public LightReciever
-{
-private:
-  uint16_t red, green, blue, ir;
-  uint16_t max_red, max_green, max_blue;
-  void getRGB();
+class LightRecieverS11059_02DT :
+  public LightReciever {
+  private:
+    uint16_t red, green, blue, ir;
+    uint16_t max_red, max_green, max_blue;
+    void getRGB();
 #ifdef DISPLAYLIFI_TRACE
-  void printRGB();
+    void printRGB();
 #endif
 
-public:
-  LightRecieverS11059_02DT();
-  void loop();
+  public:
+    LightRecieverS11059_02DT();
+    void loop();
 };
 
 #endif

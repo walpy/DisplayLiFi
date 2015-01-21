@@ -29,22 +29,20 @@ enum PHYSICAL_LAYER {
 
 unsigned int physical_status = FLAG;
 
-LightRecieverS11059_02DT::LightRecieverS11059_02DT()
-{
+LightRecieverS11059_02DT::LightRecieverS11059_02DT() {
   Wire.begin();
 }
 
-void LightRecieverS11059_02DT::getRGB()
-{
+void LightRecieverS11059_02DT::getRGB() {
   uint16_t colordata = 0;
 
-  //manual exposure mode  
+  //manual exposure mode
 
   //preset gain mode exposure time (each color ch)
   //  00 = 87.5us
   //  01= 1.4ms
   //  10= 22.4ms
-  //  11= 179.2ms 
+  //  11= 179.2ms
 
   Wire.beginTransmission(DEVICE_ADDRESS);
   Wire.write(CONTROL_REG);
@@ -67,40 +65,40 @@ void LightRecieverS11059_02DT::getRGB()
   Wire.beginTransmission(DEVICE_ADDRESS);
   Wire.write(CONTROL_REG);
   Wire.write(0x04); //start
-  Wire.endTransmission(true); 
+  Wire.endTransmission(true);
 
   uint16_t end_measuring = 0;
   while(!end_measuring) {
     Wire.beginTransmission(DEVICE_ADDRESS);
     Wire.write(CONTROL_REG);
     Wire.endTransmission(false);
-    Wire.requestFrom(0x2A,1, false);
+    Wire.requestFrom(0x2A, 1, false);
     uint16_t control_reg = Wire.read();
-    end_measuring = control_reg & 0x20; 
+    end_measuring = control_reg & 0x20;
     delay(1);
   }
 
   Wire.beginTransmission(DEVICE_ADDRESS);
   Wire.write(0x03);
   Wire.endTransmission(false);
-  Wire.requestFrom(0x2A,8,true);
+  Wire.requestFrom(0x2A, 8, true);
 
   //read data
   colordata = Wire.read();
   colordata <<= 8;
   colordata |= Wire.read();
   red = colordata;
-  colordata =0;
+  colordata = 0;
   colordata = Wire.read();
   colordata <<= 8;
   colordata |= Wire.read();
   green = colordata;
-  colordata =0;
+  colordata = 0;
   colordata = Wire.read();
   colordata <<= 8;
   colordata |= Wire.read();
   blue = colordata;
-  colordata =0;
+  colordata = 0;
   colordata = Wire.read();
   colordata <<= 8;
   colordata |= Wire.read();
@@ -125,8 +123,7 @@ void LightRecieverS11059_02DT::printRGB() {
 }
 #endif
 
-void LightRecieverS11059_02DT::loop()
-{
+void LightRecieverS11059_02DT::loop() {
   getRGB();
 
   if (red >= 1 || green >= 1 || blue >= 1) {
@@ -134,8 +131,7 @@ void LightRecieverS11059_02DT::loop()
     max_red = max(max_red, red);
     max_green = max(max_green, green);
     max_blue = max(max_blue, blue);
-  } 
-  else {
+  } else {
 #ifdef DISPLAYLIFI_TRACE
     if (physical_status == DATA) {
       printRGB();

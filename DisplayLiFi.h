@@ -5,16 +5,14 @@
 #include "LightReciever.h"
 #include "LightRecieverS11059_02DT.h"
 
-class DisplayLiFi
-{
-public:
-  DisplayLiFi();
-  void setLightReciever(LightReciever& lightReciever);
+class DisplayLiFi {
+  public:
+    DisplayLiFi();
+    void setLightReciever(LightReciever& lightReciever);
 };
 
-class Protocol
-{
-public:
-  void pushData(unsigned char data);
+class Protocol {
+  public:
+    void pushData(unsigned char data);
 };
 #endif
