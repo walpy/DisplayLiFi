@@ -33,6 +33,11 @@ LightRecieverS11059_02DT::LightRecieverS11059_02DT() {
   Wire.begin();
 }
 
+void LightRecieverS11059_02DT::setProtocol(Protocol *protocol) {
+  protocol_ = protocol;
+}
+
+
 void LightRecieverS11059_02DT::getRGB() {
   uint16_t colordata = 0;
 
@@ -107,6 +112,21 @@ void LightRecieverS11059_02DT::getRGB() {
   return;
 }
 
+void LightRecieverS11059_02DT::pushRGBToProtocol(uint8_t rgb) {
+  if (protocol_)
+    protocol_->pushRGB(rgb);
+}
+
+uint8_t LightRecieverS11059_02DT::getRGBAsBinary() {
+  uint8_t bin = 0;
+  bin = (max_red >= THRESHOLD) ? "1" : "0";
+  bin <<= 1;
+  bin = (max_green >= THRESHOLD) ? "1" : "0";
+  bin <<= 1;
+  bin = (max_blue >= THRESHOLD) ? "1" : "0";
+  return bin;
+}
+
 #ifdef DISPLAYLIFI_TRACE
 void LightRecieverS11059_02DT::printRGB() {
   Serial.print(max_red >= THRESHOLD ? "1" : "0");
@@ -132,11 +152,12 @@ void LightRecieverS11059_02DT::loop() {
     max_green = max(max_green, green);
     max_blue = max(max_blue, blue);
   } else {
-#ifdef DISPLAYLIFI_TRACE
     if (physical_status == DATA) {
+#ifdef DISPLAYLIFI_TRACE
       printRGB();
-    }
 #endif
+      pushRGBToProtocol(getRGBAsBinary());
+    }
     physical_status = FLAG;
 
     max_red = 0;

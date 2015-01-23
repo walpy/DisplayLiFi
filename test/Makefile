@@ -127,6 +127,8 @@ LightRecieverS11059_02DT.o : $(TEST_DIR)/../LightRecieverS11059_02DT.cpp \
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(TEST_DIR)/../LightRecieverS11059_02DT.cpp
 
 LightRecieverS11059_02DT_unittest.o : $(TEST_DIR)/LightRecieverS11059_02DT_unittest.cpp \
+				$(TEST_DIR)/../LightRecieverS11059_02DT.h \
+				$(TEST_DIR)/../DisplayLiFi.h \
 				$(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(TEST_DIR)/LightRecieverS11059_02DT_unittest.cpp
 
@@ -135,12 +137,34 @@ LightRecieverS11059_02DT_unittest.out : LightRecieverS11059_02DT_unittest.o \
 				arduino_mock_all.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
 
+Protocol.o : $(TEST_DIR)/../Protocol.cpp \
+				$(TEST_DIR)/../Protocol.h \
+				$(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(TEST_DIR)/../Protocol.cpp
+
+Protocol_unittest.o : $(TEST_DIR)/Protocol_unittest.cpp \
+				$(TEST_DIR)/../Protocol.h \
+				$(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(TEST_DIR)/Protocol_unittest.cpp
+
+Protocol_unittest.out : Protocol_unittest.o \
+				Protocol.o  \
+				gmock_main.a  \
+				arduino_mock_all.a
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
+
+DisplayLiFi.o : $(TEST_DIR)/../DisplayLiFi.cpp \
+				$(TEST_DIR)/../DisplayLiFi.h \
+				$(GTEST_HEADERS)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(TEST_DIR)/../DisplayLiFi.cpp
+
 DisplayLiFi_unittest.o : $(TEST_DIR)/DisplayLiFi_unittest.cpp \
-				$(TEST_DIR)/../DisplayLiFi.ino \
+				$(TEST_DIR)/../DisplayLiFi.h \
 				$(GTEST_HEADERS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $(TEST_DIR)/DisplayLiFi_unittest.cpp
 
 DisplayLiFi_unittest.out : DisplayLiFi_unittest.o \
+				DisplayLiFi.o  \
 				gmock_main.a  \
 				arduino_mock_all.a
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -lpthread $^ -o $@
