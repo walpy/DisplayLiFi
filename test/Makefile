@@ -46,7 +46,7 @@ CXXFLAGS += -g -Wall -Wextra -pthread \
 
 # All tests produced by this Makefile.  Remember to add new tests you
 # created to the list.
-TESTS = DisplayLiFi_unittest.out LightRecieverS11059_02DT_unittest.out
+TESTS = DisplayLiFi_unittest.out LightRecieverS11059_02DT_unittest.out Protocol_unittest.out
 
 # All Google Test headers.  Usually you shouldn't change this
 # definition.

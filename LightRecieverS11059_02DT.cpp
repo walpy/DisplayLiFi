@@ -119,11 +119,11 @@ void LightRecieverS11059_02DT::pushRGBToProtocol(uint8_t rgb) {
 
 uint8_t LightRecieverS11059_02DT::getRGBAsBinary() {
   uint8_t bin = 0;
-  bin = (max_red >= THRESHOLD) ? "1" : "0";
+  bin = (max_red >= THRESHOLD) ? 1 : 0;
   bin <<= 1;
-  bin = (max_green >= THRESHOLD) ? "1" : "0";
+  bin = (max_green >= THRESHOLD) ? 1 : 0;
   bin <<= 1;
-  bin = (max_blue >= THRESHOLD) ? "1" : "0";
+  bin = (max_blue >= THRESHOLD) ? 1 : 0;
   return bin;
 }
 

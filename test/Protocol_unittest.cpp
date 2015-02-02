@@ -25,15 +25,15 @@ TEST(character, normal) {
   gMockExpectedChar = 'a';
   gMockErrorCalledCount = 0;
 
-  protocol.pushData(0b110); // start bit
+  protocol.pushRGB(0b110); // start bit
   ASSERT_EQ(0b1, protocol.getBufferForTest());
-  protocol.pushData(0b111); //'a' = 97 = 0b1100001
+  protocol.pushRGB(0b111); //'a' = 97 = 0b1100001
   ASSERT_EQ(0b111, protocol.getBufferForTest());
-  protocol.pushData(0b001);
+  protocol.pushRGB(0b001);
   ASSERT_EQ(0b11100, protocol.getBufferForTest());
-  protocol.pushData(0b001);
+  protocol.pushRGB(0b001);
   ASSERT_EQ(0b1110000, protocol.getBufferForTest());
-  protocol.pushData(0b111);
+  protocol.pushRGB(0b111);
   ASSERT_EQ(1, gMockCharacterRecievedCalledCount);
   ASSERT_EQ(0, gMockErrorCalledCount);
 }
@@ -47,15 +47,15 @@ TEST(character, parityError) {
   gMockErrorCalledCount = 0;
   gMockExpectedError = DISPLAY_LIFI_ERROR_PARITY;
 
-  protocol.pushData(0b110); // start bit
+  protocol.pushRGB(0b110); // start bit
   ASSERT_EQ(0b1, protocol.getBufferForTest());
-  protocol.pushData(0b111); //'a' = 97 = 0b1100001
+  protocol.pushRGB(0b111); //'a' = 97 = 0b1100001
   ASSERT_EQ(0b111, protocol.getBufferForTest());
-  protocol.pushData(0b001);
+  protocol.pushRGB(0b001);
   ASSERT_EQ(0b11100, protocol.getBufferForTest());
-  protocol.pushData(0b001);
+  protocol.pushRGB(0b001);
   ASSERT_EQ(0b1110000, protocol.getBufferForTest());
-  protocol.pushData(0b011);
+  protocol.pushRGB(0b011);
   ASSERT_EQ(0, gMockCharacterRecievedCalledCount);
   ASSERT_EQ(1, gMockErrorCalledCount);
 }

@@ -1,5 +1,8 @@
 // Copyright (c) 2015 IKEUCHI Yasuki
 
+#ifndef Protocol_h
+#define Protocol_h
+
 #include <stdint.h>
 
 typedef void (*CallbackCharacterRecieved)(char c);
@@ -22,3 +25,4 @@ class Protocol {
     uint8_t getBufferForTest();
 };
 
+#endif

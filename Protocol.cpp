@@ -1,61 +1,83 @@
 // Copyright 2015 Yasuki IKEUCHI
 
-#include "gtest/gtest.h"
-#include "../Protocol.h"
+#include "Protocol.h"
 
-char gMockExpectedChar;
-int gMockCharacterRecievedCalledCount = 0;
-void mockOnCharacterRecieved(char c) {
-  gMockCharacterRecievedCalledCount++;
-  ASSERT_EQ(gMockExpectedChar, c);
+/**
+ * Protocol:
+ * It based on 'start-stop system' of Serial communication.
+ * It accepts 7 bits characters only(<127).
+ *
+ * Example:
+ * RGB = 111
+ * 110 : start bits
+ * xx1 : 1st two bits (xx_____)
+ * xx1 : 2nd two bits (__xx___)
+ * xx1 : 3rd two bits (____xx_)
+ * xP1 : 4th one bit and even pertity (______x)
+ **/
+
+const int START_BIT = 6; // 0b110
+
+Protocol::Protocol() :
+  onCharacterRecieved_(0),
+  onError_(0) {
 }
 
-char gMockExpectedError;
-int gMockErrorCalledCount = 0;
-void mockOnError(int errorCode) {
-  gMockErrorCalledCount++;
-  ASSERT_EQ(gMockExpectedError, errorCode);
+void Protocol::setOnCharacterRecieved(CallbackCharacterRecieved callback) {
+  onCharacterRecieved_ = callback;
 }
 
-TEST(character, normal) {
-  Protocol protocol;
-  protocol.setOnCharacterRecieved(&mockOnCharacterRecieved);
-
-  gMockCharacterRecievedCalledCount = 0;
-  gMockExpectedChar = 'a';
-  gMockErrorCalledCount = 0;
-
-  protocol.pushRGB(0b110); // start bit
-  ASSERT_EQ(0b1, protocol.getBufferForTest());
-  protocol.pushRGB(0b111); //'a' = 97 = 0b1100001
-  ASSERT_EQ(0b111, protocol.getBufferForTest());
-  protocol.pushRGB(0b001);
-  ASSERT_EQ(0b11100, protocol.getBufferForTest());
-  protocol.pushRGB(0b001);
-  ASSERT_EQ(0b1110000, protocol.getBufferForTest());
-  protocol.pushRGB(0b111);
-  ASSERT_EQ(1, gMockCharacterRecievedCalledCount);
-  ASSERT_EQ(0, gMockErrorCalledCount);
+void Protocol::setOnError(CallbackError callback) {
+  onError_ = callback;
 }
 
-TEST(character, parityError) {
-  Protocol protocol;
-  protocol.setOnCharacterRecieved(&mockOnCharacterRecieved);
-  protocol.setOnError(&mockOnError);
+int even_parity_xor(unsigned int a) {
+  // See http://d.hatena.ne.jp/houmei/20120531/1338459599
+  unsigned int b;
+  b = a >> 4;
+  a = a ^ b;
+  b = a >> 2;
+  a = a ^ b;
+  b = a >> 1;
+  a = a ^ b;
+  return a & 1;
+}
 
-  gMockCharacterRecievedCalledCount = 0;
-  gMockErrorCalledCount = 0;
-  gMockExpectedError = DISPLAY_LIFI_ERROR_PARITY;
+void Protocol::callOnCharacterRecieved(char c) {
+  if (onCharacterRecieved_)
+    onCharacterRecieved_(c);
+}
 
-  protocol.pushRGB(0b110); // start bit
-  ASSERT_EQ(0b1, protocol.getBufferForTest());
-  protocol.pushRGB(0b111); //'a' = 97 = 0b1100001
-  ASSERT_EQ(0b111, protocol.getBufferForTest());
-  protocol.pushRGB(0b001);
-  ASSERT_EQ(0b11100, protocol.getBufferForTest());
-  protocol.pushRGB(0b001);
-  ASSERT_EQ(0b1110000, protocol.getBufferForTest());
-  protocol.pushRGB(0b011);
-  ASSERT_EQ(0, gMockCharacterRecievedCalledCount);
-  ASSERT_EQ(1, gMockErrorCalledCount);
+void Protocol::callOnError(int errorCode) {
+  if (onError_)
+    onError_(errorCode);
+}
+
+void Protocol::pushRGB(uint8_t data) {
+  if (data == START_BIT) {
+    buffer_ = 1;
+    return;
+  }
+  if (buffer_ == 0) return;
+
+  buffer_ = buffer_ << 1;
+
+  buffer_ |= (data >> 2) & 1;
+  if (buffer_ & 0x80) {
+    uint8_t parityExpected = (data >> 1) & 1;
+    buffer_ = buffer_ & 0x7F;
+    uint8_t parityActual = even_parity_xor(buffer_);
+    if (parityExpected == parityActual) {
+      callOnCharacterRecieved(buffer_);
+    } else {
+      callOnError(DISPLAY_LIFI_ERROR_PARITY);
+    }
+  } else  {
+    buffer_ = buffer_ << 1;
+    buffer_ |= (data >> 1) & 1;
+  }
+}
+
+uint8_t Protocol::getBufferForTest() {
+  return buffer_;
 }
